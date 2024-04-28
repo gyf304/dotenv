@@ -40,6 +40,6 @@ install: all
 	install -m644 dotenv.1 ${DESTDIR}${MANPREFIX}/man1/dotenv.1
 
 README.md: dotenv.1 README.install.md
-	mandoc -T markdown -I os="Unknown OS" dotenv.1 > README.md
+	cat README.install.md > README.md
 	echo "" >> README.md
-	cat README.install.md >> README.md
+	mandoc -T markdown -I os="Unknown OS" dotenv.1 >> README.md

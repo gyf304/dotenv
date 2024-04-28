@@ -58,7 +58,7 @@ for compatibility with the original nodejs
 implementation.
 .El
 .Sh EXAMPLES
-Run
+Run the
 .Xr env 1
 command with the environment variables loaded from the .env file in the
 current directory:
@@ -69,6 +69,12 @@ $ dotenv env
 Same as above but with a custom dotenv file path:
 .Bd -literal -offset indent
 $ DOTENV_PATH=.env2 dotenv env
+.Ed
+.Pp
+Use dotenv in the shebang line of a script:
+.Bd -literal -offset indent
+#!/usr/bin/env -S dotenv bash
+echo $MY_VAR
 .Ed
 .Sh FILE FORMAT
 The file format is a list of key-value pairs, one per line.

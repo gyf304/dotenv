@@ -1,3 +1,10 @@
+# INSTALL
+
+```bash
+make
+sudo make install
+```
+
 DOTENV(1) - General Commands Manual
 
 # NAME
@@ -41,7 +48,7 @@ the current environment.
 
 # EXAMPLES
 
-Run
+Run the
 env(1)
 command with the environment variables loaded from the .env file in the
 current directory:
@@ -51,6 +58,11 @@ current directory:
 Same as above but with a custom dotenv file path:
 
 	$ DOTENV_PATH=.env2 dotenv env
+
+Use dotenv in the shebang line of a script:
+
+	#!/usr/bin/env -S dotenv bash
+	echo $MY_VAR
 
 # FILE FORMAT
 
@@ -96,10 +108,3 @@ env(1)
 Yifan Gu &lt;[me@yifangu.com](mailto:me@yifangu.com)&gt;
 
 Unknown OS - April 28, 2024
-
-# INSTALL
-
-```bash
-make
-sudo make install
-```
