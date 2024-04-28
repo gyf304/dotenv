@@ -137,7 +137,7 @@ int main(int argc, const char *argv[]) {
 
 	while (cur < end) {
 		char *key, *key_end, *value, *value_end;
-		// for each line
+		/* for each line */
 		skip_charset(&cur, end, " \t\r\n");
 
 		if (cur >= end) {
@@ -145,7 +145,7 @@ int main(int argc, const char *argv[]) {
 		}
 
 		if (*cur == '#') {
-			// skip line comment
+			/* skip line comment */
 			skip_until_charset(&cur, end, "\n");
 			continue;
 		}
@@ -178,7 +178,7 @@ int main(int argc, const char *argv[]) {
 		skip_charset(&cur, end, " \t");
 
 		if (*cur == '"' || *cur == '\'') {
-			// quoted value
+			/* parse quoted value */
 			char quote;
 			char *inner_cur;
 
@@ -251,9 +251,9 @@ int main(int argc, const char *argv[]) {
 			}
 			skip_until_charset(&cur, end, "\r\n");
 		} else {
+			/* parse unquoted value */
 			value_end = NULL;
 			value = cur;
-			// unquoted value
 			while (skip_until_charset(&cur, end, "# \t\r\n") && strchr("#\r\n", *cur) == NULL) {
 				value_end = cur;
 				cur++;
