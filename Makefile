@@ -39,7 +39,7 @@ install: all
 	install -m755 dotenv ${DESTDIR}${PREFIX}/bin/dotenv
 	install -m644 dotenv.1 ${DESTDIR}${MANPREFIX}/man1/dotenv.1
 
-README.md: dotenv.1 README.install.md
-	cat README.install.md > README.md
+README.md: dotenv.1 README.pre.md
+	cat README.pre.md > README.md
 	echo "" >> README.md
 	mandoc -T markdown -I os="Unknown OS" dotenv.1 >> README.md
