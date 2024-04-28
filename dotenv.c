@@ -146,7 +146,7 @@ int main(int argc, const char *argv[]) {
 
 		if (*cur == '#') {
 			/* skip line comment */
-			skip_until_charset(&cur, end, "\n");
+			skip_until_charset(&cur, end, "\r\n");
 			continue;
 		}
 
