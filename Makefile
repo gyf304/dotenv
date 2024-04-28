@@ -28,7 +28,7 @@ MANPREFIX ?= ${PREFIX}/share/man
 all: dotenv
 
 dotenv: dotenv.c
-	${CC} -Os -o dotenv dotenv.c
+	${CC} -Os -Wall -Werror -o dotenv dotenv.c
 
 clean:
 	rm -f dotenv

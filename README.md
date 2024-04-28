@@ -56,11 +56,11 @@ Same as above but with a custom dotenv file path:
 
 The file format is a list of key-value pairs, one per line.
 The key and value are separated by an equal sign.
-Whitespaces around the key and value are ignored.
+Whitespaces around keys and values are ignored.
 A line is terminated by a newline character or a carriage return.
-Empty lines and lines starting with a hash sign (#) are ignored.
+Comments can be added using a hash sign (#) either at the start of a line
+or inline. For values that contain a hash sign, the value must be quoted.
 Values can be optionally quoted with single or double quotes.
-Characters after the ending quote for a value are ignored.
 If quoted, the following escape sequences are supported:
 
 &#92;n
@@ -96,6 +96,7 @@ env(1)
 Yifan Gu &lt;[me@yifangu.com](mailto:me@yifangu.com)&gt;
 
 Unknown OS - April 28, 2024
+
 # INSTALL
 
 ```bash

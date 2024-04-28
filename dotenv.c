@@ -82,16 +82,22 @@ end:
 	return rc;
 }
 
-static inline void skip_charset(char **cur, const char *end, const char *charset) {
+static inline int skip_charset(char **cur, const char *end, const char *charset) {
+	int count = 0;
 	while (*cur < end && strchr(charset, **cur) != NULL) {
 		(*cur)++;
+		count++;
 	}
+	return count;
 }
 
-static inline void skip_until_charset(char **cur, const char *end, const char *charset) {
+static inline int skip_until_charset(char **cur, const char *end, const char *charset) {
+	int count = 0;
 	while (*cur < end && strchr(charset, **cur) == NULL) {
 		(*cur)++;
+		count++;
 	}
+	return count;
 }
 
 int main(int argc, const char *argv[]) {
@@ -144,7 +150,7 @@ int main(int argc, const char *argv[]) {
 		}
 
 		key = cur;
-		skip_until_charset(&cur, end, " \t=");
+		skip_until_charset(&cur, end, " \t=\r\n");
 		if (cur >= end) {
 			fprintf(stderr, "Unexpected end of file after key \"%s\"\n", key);
 			rc = 1;
@@ -154,6 +160,7 @@ int main(int argc, const char *argv[]) {
 		skip_charset(&cur, end, " \t");
 
 		if (*cur != '=' && *cur != '\0') {
+			*cur = '\0';
 			fprintf(stderr, "Missing equal after key \"%s\"\n", key);
 			rc = 1;
 			goto end;
@@ -183,9 +190,9 @@ int main(int argc, const char *argv[]) {
 
 			while (cur < end) {
 				if (*cur == '\\') {
-					cur++; // skip escape character
+					cur++;
 					if (cur >= end) {
-						fprintf(stderr, "Unexpected end of file after escape character at key \"%s\"\n", key);
+						fprintf(stderr, "Unexpected end of file after escape character\n");
 						rc = 1;
 						goto end;
 					}
@@ -233,15 +240,29 @@ int main(int argc, const char *argv[]) {
 				goto end;
 			}
 
-			key_end = inner_cur;
+			value_end = inner_cur;
 			cur++;
+			skip_charset(&cur, end, " \t");
+			if (skip_until_charset(&cur, end, "#\r\n") > 0) {
+				fprintf(stderr, "Unexpected characters after closing quote\n");
+				rc = 1;
+				goto end;
+			}
+			skip_until_charset(&cur, end, "\r\n");
 		} else {
+			value_end = NULL;
 			value = cur;
 			// unquoted value
+			while (skip_until_charset(&cur, end, "# \t\r\n") && strchr("#\r\n", *cur) == NULL) {
+				value_end = cur;
+				cur++;
+			}
+			if (value_end == NULL) {
+				value_end = cur;
+			}
 			skip_until_charset(&cur, end, "\r\n");
-			key_end = cur;
 		}
-		*key_end = '\0';
+		*value_end = '\0';
 
 		rc = setenv(key, value, 1);
 		if (rc != 0) {
