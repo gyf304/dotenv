@@ -1,0 +1,101 @@
+.\" Manpage Copyright (c) 2024 Yifan Gu
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE CONTRIBUTOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+.\" OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\"
+.Dd April 28, 2024
+.Dt DOTENV 1
+.Os
+.Sh NAME
+.Nm dotenv
+.Nd "load environment variables from a file"
+.Sh SYNOPSIS
+.Nm
+.Ar program ...
+.Sh DESCRIPTION
+The
+.Nm
+utility
+reads a file (by default
+.Pa .env
+in the current directory) and loads the environment variables from it.
+It then executes the specified program with the loaded environment
+variables.
+If no dotenv file is found, it will execute the program with
+the current environment.
+.Sh ENVIRONMENT VARIABLES
+.Bl -tag -width DOTENV_PATH
+.It Ev DOTENV_PATH
+The path to the dotenv file.
+If not set, the default path is
+.Pa .env
+in the current directory.
+.El
+.Bl -tag -width DOTENV_CONFIG_PATH
+.It Ev DOTENV_CONFIG_PATH
+Same as
+.Ev DOTENV_PATH
+for compatibility with the original nodejs
+.Nm dotenv
+implementation.
+.El
+.Sh EXAMPLES
+Run
+.Xr env 1
+command with the environment variables loaded from the .env file in the
+current directory:
+.Bd -literal -offset indent
+$ dotenv env
+.Ed
+.Pp
+Same as above but with a custom dotenv file path:
+.Bd -literal -offset indent
+$ DOTENV_PATH=.env2 dotenv env
+.Ed
+.Sh FILE FORMAT
+The file format is a list of key-value pairs, one per line.
+The key and value are separated by an equal sign.
+Whitespaces around the key and value are ignored.
+A line is terminated by a newline character or a carriage return.
+Empty lines and lines starting with a hash sign (#) are ignored.
+Values can be optionally quoted with single or double quotes.
+Characters after the ending quote for a value are ignored.
+If quoted, the following escape sequences are supported:
+.Bl -tag -width \e'
+.It \en
+A newline.
+.It \er
+A carriage return.
+.It \et
+A tab.
+.It \e'
+A single quote.
+.It \e"
+A double quote.
+.It \e\e
+A backslash.
+.El
+.El
+.Sh SEE ALSO
+.Xr env 1
+.Sh AUTHORS
+.An -nosplit
+.An Yifan Gu Aq Mt me@yifangu.com

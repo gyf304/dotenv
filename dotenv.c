@@ -1,3 +1,27 @@
+/*
+Copyright (c) 2024 Yifan Gu
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE CONTRIBUTOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,13 +35,14 @@ static inline int read_file(const char *filename, char **buffer, unsigned long *
 
 	file = fopen(filename, "rb");
 	if (file == NULL) {
-		fprintf(stderr, "Error: Unable to open file\n");
-		return 1;
+		*buffer = NULL;
+		*file_size = 0;
+		return 0;
 	}
 
 	rc = fseek(file, 0L, SEEK_END);
 	if (rc != 0) {
-		fprintf(stderr, "Error: Unable to seek file\n");
+		fprintf(stderr, "Unable to seek file\n");
 		goto end;
 	}
 
@@ -25,27 +50,27 @@ static inline int read_file(const char *filename, char **buffer, unsigned long *
 
 	if (*file_size > MAX_FILE_SIZE) {
 		rc = 1;
-		fprintf(stderr, "Error: File too large\n");
+		fprintf(stderr, "File too large\n");
 		goto end;
 	}
 
 	rc = fseek(file, 0L, SEEK_SET);
 	if (rc != 0) {
-		fprintf(stderr, "Error: Unable to seek file\n");
+		fprintf(stderr, "Unable to seek file\n");
 		goto end;
 	}
 
 	*buffer = malloc(*file_size + 1);
 	if (buffer == NULL) {
 		rc = 1;
-		fprintf(stderr, "Error: Unable to allocate buffer\n");
+		fprintf(stderr, "Unable to allocate buffer\n");
 		goto end;
 	}
 	(*buffer)[*file_size] = '\0';
 
 	if (fread(*buffer, 1, *file_size, file) != *file_size) {
 		rc = 1;
-		fprintf(stderr, "Error: Unable to read file\n");
+		fprintf(stderr, "Unable to read file\n");
 		goto end;
 	}
 
@@ -73,21 +98,31 @@ int main(int argc, const char *argv[]) {
 	int rc;
 	unsigned long file_size;
 	char *buffer, *end, *cur;
+	const char *dotenv_path;
+
+	dotenv_path = getenv("DOTENV_PATH");
+	if (dotenv_path == NULL || *dotenv_path == '\0') {
+		dotenv_path = getenv("DOTENV_CONFIG_PATH");
+	}
+	if (dotenv_path == NULL || *dotenv_path == '\0') {
+		dotenv_path = ".env";
+	}
 
 	if (argc < 1) {
 		return 1;
 	}
 
 	if (argc < 2) {
-		fprintf(stderr, "Error: Missing command. Usage: %s <command> [args...]\n", argv[0]);
+		fprintf(stderr, "Missing command. Usage: %s <command> [args...]\n", argv[0]);
 		return 1;
 	}
 
 	buffer = NULL;
 
-	rc = read_file(".env", &buffer, &file_size);
-	if (rc != 0) {
-		return rc;
+	rc = read_file(dotenv_path, &buffer, &file_size);
+	if (rc != 0 || buffer == NULL) {
+		rc = 1;
+		goto end;
 	}
 
 	cur = buffer;
@@ -111,7 +146,7 @@ int main(int argc, const char *argv[]) {
 		key = cur;
 		skip_until_charset(&cur, end, " \t=");
 		if (cur >= end) {
-			fprintf(stderr, "Error: unexpected end of file after key \"%s\"\n", key);
+			fprintf(stderr, "Unexpected end of file after key \"%s\"\n", key);
 			rc = 1;
 			goto end;
 		}
@@ -119,12 +154,12 @@ int main(int argc, const char *argv[]) {
 		skip_charset(&cur, end, " \t");
 
 		if (*cur != '=' && *cur != '\0') {
-			fprintf(stderr, "Error: Missing equal after key \"%s\"\n", key);
+			fprintf(stderr, "Missing equal after key \"%s\"\n", key);
 			rc = 1;
 			goto end;
 		}
 		if (key_end == key) {
-			fprintf(stderr, "Error: Empty key\n");
+			fprintf(stderr, "Empty key\n");
 			rc = 1;
 			goto end;
 		}
@@ -150,7 +185,7 @@ int main(int argc, const char *argv[]) {
 				if (*cur == '\\') {
 					cur++; // skip escape character
 					if (cur >= end) {
-						fprintf(stderr, "Error: unexpected end of file after escape character at key \"%s\"\n", key);
+						fprintf(stderr, "Unexpected end of file after escape character at key \"%s\"\n", key);
 						rc = 1;
 						goto end;
 					}
@@ -174,7 +209,7 @@ int main(int argc, const char *argv[]) {
 							*inner_cur = '"';
 							break;
 						default:
-							fprintf(stderr, "Error: Invalid escape character at key \"%s\"\n", key);
+							fprintf(stderr, "Invalid escape character at key \"%s\"\n", key);
 							rc = 1;
 							goto end;
 					}
@@ -193,7 +228,7 @@ int main(int argc, const char *argv[]) {
 			}
 
 			if (*cur != quote) {
-				fprintf(stderr, "Error: Missing closing quote\n");
+				fprintf(stderr, "Missing closing quote\n");
 				rc = 1;
 				goto end;
 			}
@@ -210,7 +245,7 @@ int main(int argc, const char *argv[]) {
 
 		rc = setenv(key, value, 1);
 		if (rc != 0) {
-			perror("Error: Unable to set environment variable");
+			perror("Unable to set environment variable");
 			goto end;
 		}
 	}
@@ -226,7 +261,8 @@ end:
 
 	rc = execvp(argv[1], (char *const *) &argv[1]);
 	if (rc != 0) {
-		perror("Error: Unable to execute command");
+		fprintf(stderr, "Unable to execute command %s: ", argv[1]);
+		perror("");
 		return rc;
 	}
 
