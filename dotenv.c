@@ -128,7 +128,9 @@ int main(int argc, const char *argv[]) {
 
 	rc = read_file(dotenv_path, &buffer, &file_size);
 	if (rc != 0 || buffer == NULL) {
-		rc = 1;
+		if (rc != 0) {
+			rc = 1;
+		}
 		goto end;
 	}
 
