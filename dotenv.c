@@ -61,7 +61,7 @@ static inline int read_file(const char *filename, char **buffer, unsigned long *
 	}
 
 	*buffer = malloc(*file_size + 1);
-	if (buffer == NULL) {
+	if (*buffer == NULL) {
 		rc = 1;
 		fprintf(stderr, "Unable to allocate buffer\n");
 		goto end;
